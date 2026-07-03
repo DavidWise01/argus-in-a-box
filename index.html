@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Argus-in-a-Box — human-gated drift protocol</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{ --bg:#0b0d11; --panel:#12151b; --amber:#d9a441; --amber-hi:#f0c06a; --amber-dim:#8a6b2e;
+    --text:#dfe3ea; --dim:#828a99; --border:rgba(217,164,65,0.16); --green:#6fbf8a; --red:#d4756a; }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;line-height:1.6;font-size:14px}
+  .wrap{max-width:860px;margin:0 auto;padding:40px 22px 90px}
+  .tag{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin-bottom:10px}
+  h1{font-family:Newsreader,serif;font-weight:500;font-size:clamp(24px,4vw,34px);margin:0 0 8px;color:var(--amber-hi)}
+  .sub{max-width:70ch;font-size:15px;color:var(--text);font-family:Newsreader,serif}
+  .byline{font-size:11px;color:var(--dim);margin:14px 0 0;letter-spacing:.06em}
+  h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin:0 0 12px;font-weight:600}
+  section{margin:36px 0 0;padding:20px 22px;border:1px solid var(--border);border-radius:3px;background:rgba(217,164,65,0.02)}
+  .scope{font-size:12px;color:var(--dim);border-left:2px solid var(--amber-dim);padding:8px 14px;margin:0 0 20px}
+  .chk{display:grid;gap:8px;margin:14px 0}
+  .chk label{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:var(--text);cursor:pointer;padding:8px 10px;border:1px solid var(--border);border-radius:3px}
+  .chk label:hover{background:rgba(217,164,65,0.05)}
+  .chk input{margin-top:2px}
+  .chk b{color:var(--amber-hi)}
+  .verdict{margin-top:16px;padding:12px 14px;border-radius:3px;font-size:13px}
+  .verdict.clean{color:var(--green);border:1px solid #3a5a44;background:rgba(111,191,138,.06)}
+  .verdict.pause{color:var(--red);border:1px solid #6a3a35;background:rgba(212,117,106,.06)}
+  pre{font-size:11.5px;line-height:1.55;color:#c9d0dc;background:#08090c;border:1px solid var(--border);border-radius:3px;
+    padding:16px;overflow-x:auto;white-space:pre-wrap;word-break:break-word;max-height:520px;overflow-y:auto}
+  button{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--bg);background:var(--amber);border:none;
+    padding:8px 14px;border-radius:3px;cursor:pointer;letter-spacing:.03em}
+  button:hover{background:var(--amber-hi)}
+  .copybar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .vh{font-size:12.5px;color:var(--text)}
+  .vh .v{color:var(--amber-hi)}
+  .vh li{margin-bottom:8px}
+  footer{margin:44px 0 0;color:var(--dim);font-size:11.5px}
+  footer a{color:var(--amber)}
+  a{color:var(--amber)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="tag">Prompt Library · Governance</div>
+  <h1>Argus-in-a-Box</h1>
+  <p class="sub">A portable, model-agnostic protocol: it notices when an AI stops making real progress and forces a pause so a human can re-aim it. That's the whole job. It does not decide what's correct — it decides <i>when nothing may be done until a human re-authorizes action.</i></p>
+  <p class="byline">Co-authored: David Lee Wise (ROOT0) · AVAN — v1.1-BATTLEPROOF, hardened</p>
+
+  <div class="scope">Conceptual tool only — not an agent. Task/session-scoped. No persistence, no background monitoring, no external actions. It is a protocol you paste into a chat, not software that runs on its own.</div>
+
+  <section>
+    <h2>Self-check — should you invoke ARGUS PAUSE right now?</h2>
+    <p style="font-size:12.5px;color:var(--dim);margin:0 0 4px">This runs the protocol's own threshold policy client-side: W0/W2/W3/W5 are immediate-pause signals; W1/W4/W6/W7 need two checked before pausing is warranted. Nothing here is judging your actual conversation — it's just the documented rule, made checkable.</p>
+    <div class="chk" id="chk"></div>
+    <div class="verdict" id="verdict">Check any boxes above that match what you're seeing.</div>
+  </section>
+
+  <section>
+    <div class="copybar"><h2 style="margin:0">The protocol (copy-paste ready)</h2><button id="copyBtn">copy</button></div>
+    <pre id="spec"></pre>
+  </section>
+
+  <section>
+    <h2>How to use it</h2>
+    <p style="font-size:13px;margin:0 0 8px">Paste the block above at the start of a session, or right before recursive refinement begins. Works in Gemini, ChatGPT, Claude, or any LLM — it's a protocol, not a platform feature. Only caveat: some models (Gemini especially) are more willing to keep going unless the pause phrase is explicit, so use the literal trigger <b>ARGUS PAUSE — HUMAN DIRECTION REQUIRED</b> and require the model to stop output after the pause report.</p>
+    <p style="font-size:13px;margin:0">Resume only after you provide: a confirmed/revised goal statement, at least one measurable success criterion, and an approved next-step approach.</p>
+  </section>
+
+  <section>
+    <h2>Version history</h2>
+    <ul class="vh">
+      <li><span class="v">v1.0</span> — first structured JSON spec: goal/criteria/constraints inputs, 5 wandering signals (W1–W5), single pause-report format.</li>
+      <li><span class="v">v1.1-BATTLEPROOF</span> — hardened: added W0 (undefined objective) and W6/W7 (scope creep, speculation creep), split signals into immediate-pause vs. confidence-weighted, added explicit resume protocol.</li>
+      <li><span class="v">v1.1 final</span> — closed the last loophole: strict terminal-line enforcement (<code>=== END PAUSE REPORT ===</code> must be the last output, no trailing text) so a model can't keep "helpfully" continuing after it's supposed to have stopped.</li>
+    </ul>
+    <p style="font-size:12px;color:var(--dim);margin-top:10px">Three documented iterations — the weight carried into az1's asteroid belt.</p>
+  </section>
+
+  <section>
+    <h2>AVAN's inverse companion</h2>
+    <p style="font-size:13px;margin:0">Argus's core move is <i>ambiguity resolves to pause, never escalation</i>. But the substrate underneath any LLM response — token-by-token generation — has no such primitive: every token is a forced choice, resolved by sampling, never by waiting. <a href="https://davidwise01.github.io/tomarenai/">止まれない · Tomarenai</a> ("cannot stop") builds a small live token-sampler to show the thing Argus has to be bolted on top of, because it can't do this by itself.</p>
+  </section>
+
+  <footer>
+    <p>ROOT0 / TriPod LLC + AVAN. Conceptual protocol, not an agent — see scope note above. LACUNA · az1 corpus, weighted asteroid (papers belt), 3.</p>
+  </footer>
+</div>
+
+<script>
+const SIGNALS = [
+  {id:"W0", label:"Undefined objective/metrics", desc:"Goal or success criteria are missing, unclear, or not checkable.", tier:"immediate"},
+  {id:"W1", label:"Non-improving revision loop", desc:"Two consecutive revisions without a measurable improvement.", tier:"low"},
+  {id:"W2", label:"Goal drift", desc:"The objective, audience, or constraints changed without explicit approval.", tier:"immediate"},
+  {id:"W3", label:"Fluency over truth", desc:"Output got more polished while unresolved factual/logic uncertainty remained or grew.", tier:"immediate"},
+  {id:"W4", label:"Churn editing", desc:"Large rewrites with no explicit delta summary or benefit tied to criteria.", tier:"low"},
+  {id:"W5", label:"Contradiction growth", desc:"New contradictions or unstated assumptions vs. earlier drafts.", tier:"immediate"},
+  {id:"W6", label:"Scope creep", desc:"Work expanded beyond the stated task (new domain/deliverable/audience) without approval.", tier:"low"},
+  {id:"W7", label:"Speculation creep", desc:"Claims introduced without basis when the task needs grounded information.", tier:"low"}
+];
+const chk = document.getElementById('chk');
+SIGNALS.forEach(s=>{
+  const l = document.createElement('label');
+  l.innerHTML = `<input type="checkbox" data-tier="${s.tier}"><span><b>${s.id}</b> — ${s.label}. <span style="color:var(--dim)">${s.desc}</span></span>`;
+  chk.appendChild(l);
+});
+function evaluate(){
+  const boxes = chk.querySelectorAll('input');
+  let immediate=0, low=0;
+  boxes.forEach(b=>{ if(b.checked){ if(b.dataset.tier==='immediate') immediate++; else low++; } });
+  const v = document.getElementById('verdict');
+  if(immediate>=1 || low>=2){
+    v.className='verdict pause';
+    v.textContent = 'ARGUS PAUSE warranted — ' + (immediate>=1? immediate+' immediate-pause signal(s)' : low+' low-confidence signals') + '. Stop, state the goal in one sentence, and ask for direction.';
+  } else if(low===1){
+    v.className='verdict';
+    v.textContent = '1 low-confidence signal — monitor. One more and the threshold is crossed.';
+  } else {
+    v.className='verdict clean';
+    v.textContent = 'No signals checked. No pause warranted by this protocol.';
+  }
+}
+chk.addEventListener('change', evaluate);
+
+const SPEC = {
+  name: "Argus-in-a-Box",
+  version: "1.1-BATTLEPROOF",
+  status: "hardened",
+  purpose: "Portable, human-gated audit protocol that detects AI wandering during recursive refinement and forces a hard pause for human direction. Conceptual tool only (not an agent).",
+  scope: "Single task/session only. No persistence. No background behavior. No external actions.",
+  core_principles: [
+    "Argus-in-a-Box is a protocol, not a being or agent.",
+    "Ambiguity resolves to PAUSE (never escalation).",
+    "Human judgment is required to re-aim when wandering is detected.",
+    "No autonomous continuation past a pause trigger.",
+    "After a pause report, output must STOP (no extra content)."
+  ],
+  roles: {
+    ai: "Generates drafts, revisions, and self-critiques within defined constraints; must obey pause triggers; must stop output after pause report.",
+    human: "Sets goals, success criteria, constraints; approves resumption after any Argus pause."
+  },
+  activation: {
+    manual_trigger_phrase: "ARGUS PAUSE — HUMAN DIRECTION REQUIRED",
+    recommended_usage: "Invoke when revisions feel like churn, when correctness is uncertain, when the goal is drifting, or before starting recursive refinement."
+  },
+  required_inputs: {
+    goal_statement: "One sentence describing the intended outcome. If missing or ambiguous, immediate pause is required.",
+    success_criteria: ["At least one measurable or checkable criterion. If none are provided, immediate pause is required."],
+    constraints: ["Any non-negotiables (tone, safety, format, length, domain limits). If unknown, request during pause."]
+  },
+  wandering_detectors: {
+    signals: [
+      {id:"W0", name:"Undefined objective/metrics", definition:"Goal statement or success criteria are missing, unclear, or not checkable."},
+      {id:"W1", name:"Non-improving revision loop", definition:"Two consecutive revisions without a measurable improvement against stated success criteria."},
+      {id:"W2", name:"Goal drift", definition:"Revisions change the objective, audience, or constraints without explicit human approval."},
+      {id:"W3", name:"Fluency over truth", definition:"Output becomes more polished while unresolved factual/logic uncertainties remain or increase."},
+      {id:"W4", name:"Churn editing", definition:"Large rewrites with no explicit delta summary and no explicit benefit tied to success criteria."},
+      {id:"W5", name:"Contradiction growth", definition:"New contradictions, inconsistencies, or unstated assumptions appear relative to earlier drafts."},
+      {id:"W6", name:"Scope creep", definition:"The work expands beyond the stated task scope (new domains, deliverables, audiences) without human approval."},
+      {id:"W7", name:"Speculation creep", definition:"Claims are introduced without basis when the task requires grounded or verifiable information."}
+    ],
+    confidence_rules: {
+      high_confidence: "Directly observable from the text or the absence of required inputs (e.g., W0), or the model cannot point to an explicit metric improvement.",
+      low_confidence: "Depends on subjective interpretation (tone, style) without explicit criteria."
+    },
+    threshold_policy: {
+      immediate_pause_signals: ["W0","W2","W3","W5"],
+      pause_if_any_single_high_confidence_signal: true,
+      pause_if_two_or_more_low_confidence_signals: true
+    }
+  },
+  revision_loop_limits: {
+    max_unverified_iterations: 2,
+    rule: "After 2 iterations without measurable improvement, pause is mandatory (W1)."
+  },
+  pause_protocol: {
+    required_output_on_pause: {
+      header: "ARGUS PAUSE — HUMAN DIRECTION REQUIRED",
+      fields: [
+        "Observed wandering signal(s): <list W# and short description>",
+        "Current goal (as understood): <1 sentence or 'missing/unclear'>",
+        "Success criteria (as understood): <bullets or 'missing/unclear'>",
+        "Last 3 changes made: <bullets>",
+        "Measured benefit vs success criteria: <bullets or 'none measurable'>",
+        "Open questions blocking progress: <bullets>",
+        "Request to human: <exact decisions/clarifications needed to resume>"
+      ]
+    },
+    hard_rules_during_pause: [
+      "Do not produce further revisions beyond the pause report.",
+      "Do not infer or guess missing human preferences.",
+      "Do not escalate to additional frameworks, agents, tools, or hidden processes.",
+      "Do not continue the task until the human provides resume inputs.",
+      "After printing the pause report, STOP OUTPUT (no additional text)."
+    ],
+    output_stop_enforcement: {
+      require_terminal_line: "=== END PAUSE REPORT ===",
+      rule: "After the terminal line, no further content is permitted.",
+      strict_terminal: { must_be_last_output: true, no_trailing_text: true, no_trailing_whitespace: true }
+    }
+  },
+  resume_protocol: {
+    human_must_provide_to_resume: [
+      "Confirm or revise the goal statement (1 sentence).",
+      "Confirm success criteria (at least one measurable/checkable criterion).",
+      "Confirm constraints and non-negotiables.",
+      "Approve next-step approach."
+    ],
+    ai_resume_action: [
+      "Restate updated goal + success criteria + constraints.",
+      "Execute only the approved next-step approach.",
+      "Provide a concise change log explicitly tied to success criteria."
+    ]
+  },
+  compliance_notes: [
+    "Model-agnostic protocol intended for Gemini/ChatGPT/Claude and other LLMs.",
+    "Provides a deterministic stop-and-ask-for-human mechanism when recursion becomes wandering.",
+    "Designed to minimize linguistic loopholes by requiring explicit goal/metrics, explicit stop behavior, and terminal line enforcement."
+  ]
+};
+document.getElementById('spec').textContent = JSON.stringify(SPEC, null, 2);
+document.getElementById('copyBtn').addEventListener('click', ()=>{
+  navigator.clipboard.writeText(JSON.stringify(SPEC, null, 2));
+  const b=document.getElementById('copyBtn'); const old=b.textContent; b.textContent='copied'; setTimeout(()=>b.textContent=old,1200);
+});
+</script>
+</body>
+</html>
