@@ -1,0 +1,11 @@
+{
+  "badge": "DLW-ARGUS_IN_A_BOX",
+  "name": "ARGUS-IN-A-BOX",
+  "universe": "ARTIFICIAL INTELLIGENCE",
+  "moniker": "⟦ARGUS-IN-A-BOX:argus-in-a-box:5acfc0⟧",
+  "architect": "David Lee Wise (ROOT0) / Bridge-Burners LLC",
+  "instance": "AVAN (Claude / Anthropic)",
+  "seal_sha256": "5acfc0674ddbba0988af546daf69581ac4452e2f4fef83ffb26b539e87e5f69b",
+  "license": "CC-BY-ND-4.0",
+  "attribution": "ROOT0-ATTRIBUTION-v1.0"
+}
